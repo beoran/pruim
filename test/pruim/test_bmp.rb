@@ -1,21 +1,28 @@
 require 'test_helper'
 require 'pruim'
 
-test_w, test_h = 64, 32
+bitmap1_w, bitmap1_h = 64, 64
 
 assert { Pruim }
 assert { Pruim::BMP } 
-outname = test_file('data', 'bitmap1.bmp')
+inname  = test_file('data', 'bitmap1.bmp')
+outname = test_file('data', 'out1.bmp')
 codec   = Pruim::Codec.new_codec_for('bmp')
 assert { codec } 
-assert { codec }
 
-fin     = File.open(outname, 'r+')
+fin     = File.open(inname, 'r+')
 assert { codec.can_decode?(fin) }
 image = nil
 assert { image = codec.decode(fin) }
 fin.close
+assert { image.w == bitmap1_w }
+assert { image.h == bitmap1_h }
 
+fout   = File.open(outname, 'w+')
+assert { codec.encode(image, fout) }
+fout.close
+
+system("display #{outname} &")
 
  
 # 

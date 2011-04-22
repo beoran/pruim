@@ -11,16 +11,40 @@ module Pruim
     attr_reader :pages
     # Currently "active" page.
     attr_reader :active
+    # image mode, may be one of :palette, :rgba
+    attr_reader :mode
+    # color depth, may be one of 1, 2, 4, 8, 16, 24, 32
+    attr_reader :depth
     
-    def initialize(w, h, palette = nil, make_page = false)
+    # Extra information data hash table.
+    attr_reader :info
+    
+    def self.depth_for_colors(ncolors)
+      (Math.log(ncolors) / Math.log(2)).to_i
+    end
+    
+    def initialize(w, h, extra = {})
       @w        = w
       @h        = h
-      @palette  = palette
+      @info     = {}
+      @palette  = extra[:palette]
+      @mode     = extra[:mode]      
+      @mode   ||= (@palette ? :palette : :rgba)
+      @depth    = extra[:depth]
+      @depth  ||= (@palette ? depth_for_colors(@palette.size + 1) : 32)
       @pages    = [] 
       @ordered  = {} 
       @active   = nil
-      self.new_page() if make_page
+      if extra[:pages]
+        data = extra[:data] || []
+        extra[:pages].times { |i| self.new_page(@w, @h, :data => data[i]) }
+      end  
     end
+    
+    def palette?
+      return !(@palette.nil?)
+    end
+      
     
     # Sets the page with the given index as active if it exists.
     def activate(index)
@@ -29,10 +53,10 @@ module Pruim
     
     # Create a new a page and adds it to this image.
     # The page is also set as the active page.
-    def new_page(w = nil, h = nil, frame = 0, layer = 0, data = nil)
+    def new_page(w = nil, h = nil, extra = {})
       w       ||= self.w
       h       ||= self.h
-      page      = Page.new(self, w, h, frame, layer, data)
+      page      = Page.new(self, w, h, extra)
       return self.add_page(page)
     end
     

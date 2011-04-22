@@ -5,7 +5,7 @@ test_w, test_h = 64, 32
 
 assert { Pruim }
 assert { Pruim::Image } 
-image = Pruim::Image.new(test_w, test_h, nil, true)
+image = Pruim::Image.new(test_w, test_h, :pages => 1)
 assert { image } 
 assert { image.w == test_w }
 assert { image.h == test_h }

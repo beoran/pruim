@@ -9,8 +9,27 @@ module Pruim
       uint16 :creator1
       uint16 :creator2
       uint32 :bitmap_offset
+      def initialize(*args)
+        super
+        self.magic, self.filesize, self.creator1, self.creator2, 
+        self.bitmap_offset = *args
+      end
     end
-    
+
+    class CoreHeader < BinData::Record
+      endian :little
+      uint32 :header_size
+      int32  :width
+      int32  :height
+      uint16 :nplanes
+      uint16 :bitspp
+      def initialize(*args)
+        super
+        self.header_size, self.width, self.height, self.nplanes, 
+        self.bitspp = *args
+      end
+    end
+
     class ExtraHeader < BinData::Record
       endian :little
 #       uint32 :header_size
@@ -24,6 +43,12 @@ module Pruim
       int32  :vres
       uint32 :ncolors
       uint32 :nimpcolors
+      
+      def initialize(*args) 
+        super
+        self.compress_type, self.bmp_bytesz, self.hres, self.vres, self.ncolors,
+        self.nimpcolors  = *args
+      end
     end
 
     BI_RGB   = 0        # 
@@ -36,24 +61,36 @@ module Pruim
     BITMAPV5HEADER  =124# Latest version
     HEADER_SIZE     = 14
     
-    class CoreHeader < BinData::Record
-      endian :little
-      uint32 :header_size
-      int32  :width
-      int32  :height
-      uint16 :nplanes
-      uint16 :bitspp
-    end
           
-    class ColorTableEntryRGBX < BinData::Record
+    class BGRX < BinData::Record
       uint8 :b
       uint8 :g
       uint8 :r
       uint8 :x
+      def initialize(b, g, r, x)
+        super
+        self.b = b
+        self.g = g
+        self.r = r
+        self.x = x
+      end
+    end
+    
+    class BGR < BinData::Record
+      uint8 :b
+      uint8 :g
+      uint8 :r
+      
+      def initialize(b, g, r)
+        super
+        self.b = b
+        self.g = g
+        self.r = r
+      end
     end
     
     class ColorTableRGBX < BinData::Record
-      array :type => ColorTableEntryRGBX
+      array :type => BGRX
     end
       
     def can_decode?(io)
@@ -62,14 +99,62 @@ module Pruim
       return header && header.magic == 'BM'
     end
     
-    def decode_bpp8(io, header, core, extra)
-      table =[] 
+    
+    def read_palette(io, header, core, extra)
+      palette = Pruim::Palette.new
+      ncolors = 2 ** core.bitspp
       for i in 0..255
-        color = ColorTableEntryRGBX.read(io)        
-        table << color 
+        color = BGRX.read(io)
+        palette.new_rgb(color.r, color.g, color.b)
+        raise "Unexpected end of file whilst reading bmp palette!" if io.eof?
       end
-      io.seek(HEADER_SIZE + core.header_size)
-      
+      return palette
+    end
+    
+    
+    def decode_bpp8_rgb(io, header, core, extra, padding)
+      data = []
+      for ypos in (0...core.height) 
+        size = core.width + padding
+        # read a line with padding
+        raise "End of file when reading BMP btyes!" if io.eof?
+        str  = io.read(size)
+        raise "Short read when reading BMP bytes!" unless str && str.bytesize == size
+        # make an array out of it and drop the padding
+        arr  = str.bytes.to_a
+        arr.pop(padding)
+        data = arr + data # prepend data
+      end      
+      return data
+    end
+    
+    # Calculate padding size
+    def calc_padding(wide, palette = true)
+      bs      = palette ? 1 : 3
+      padding = (1 * bs * wide) % 4;
+      padding = 4 - padding if padding != 0
+      return padding
+    end
+
+    
+    def decode_bpp8(io, header, core, extra)
+      # p header, core, extra
+      io.seek(HEADER_SIZE + core.header_size)      
+      palette = read_palette(io, header, core, extra)
+      # Skip to the bitmap, gap may be there...
+      io.seek(header.bitmap_offset)
+      # Calculate padding size
+      padding = calc_padding(core.width, true)
+      data    = nil
+      case extra.compress_type
+        when BI_RGB
+          data = decode_bpp8_rgb(io, header, core, extra, padding)
+        else
+          return nil
+      end
+      image   = Image.new(core.width, core.height, :depth => core.bitspp, 
+                        :palette => palette, :pages => 1, :data => [data])
+      return image
     end
     
     def decode(io)
@@ -82,15 +167,63 @@ module Pruim
       io.seek(HEADER_SIZE + core.header_size)
       # skip rest of header that we don't support
       if core.bitspp == 8
-        return decode_bpp8(io, header, core, extra) 
+        return decode_bpp8(io, header, core, extra)
       end
       # TODO: real color bitmaps.
       return nil
-       
-      p header, core, extra
+    end
+    
+    def encode_palette(image, io)
+      image.palette.each do |color|
+        r, g, b = *Color.to_rgb(color)
+        bgrx    = BGRX.new(b, g, r, 0)
+        bgrx.write(io)
+      end
+    end
+    
+    def encode_bpp8_rgb(image, io, padding)
+      page = image.active
+      ypos = image.h - 1
+      while ypos >= 0
+        row   = page.row(ypos)
+        row   = row + [0] * 3
+        str   = row.pack('C*')
+        io.write(str)
+        ypos -= 1
+      end
     end
     
     
+    def encode_bpp8(image, io, padding)
+      encode_palette(image, io)
+      encode_bpp8_rgb(image, io, padding)
+    end
+    
+    def encode(image, io)
+      bitcount    = (image.palette? ? 8 : 24)
+      bitmap_size = ((image.w * bitcount) / 8) * image.h
+      info_size   = BITMAPINFOHEADER
+      # Data for the palette
+      if image.palette?
+        info_size += image.palette.size * 4
+      end
+      total_size = 14 + info_size + bitmap_size
+      # write bmp header info 
+      header = Header.new('BM', total_size, 0, 0, 14 + info_size)
+      header.write(io)
+      core   = CoreHeader.new(BITMAPINFOHEADER, image.w, image.h, 1, bitcount)
+      core.write(io)
+      extra  = ExtraHeader.new(BI_RGB, 0, 0, image.palette.size, 0)
+      extra.write(io)
+      # Calculate padding size
+      padding = calc_padding(image.w, image.palette?)
+      if image.palette?
+        encode_bpp8(image, io, padding)
+      else
+        encode_bpp24(image, io, padding)
+      end
+      return image
+    end
     
     
     

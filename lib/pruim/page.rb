@@ -1,4 +1,6 @@
  module Pruim
+  # A Page can represents both a layer and a frame of animation, for 
+  # multi-page image formats.
   class Page
     attr_reader :image
     attr_reader :w
@@ -7,16 +9,30 @@
     attr_reader :frame
     attr_reader :x
     attr_reader :y
+ 
+    # Extra information data hash table.
+    attr_reader :info
     
-    def initialize(image, w, h, frame = 0, layer = 0, data = nil)
+    # Returns a row of pixels with the given y coordinates as an array
+    def row(y)
+      return @data.slice(y * self.w, self.w)
+    end
+    
+    
+    def pixels
+      return @data
+    end
+
+    def initialize(image, w, h, extra = {})
       @image  = image
+      @info   = {}
       @w      = w
       @h      = h
-      @frame  = frame
-      @layer  = layer
-      @x      = 0
-      @y      = 0
-      @data   = data
+      @frame  = extra[:frame] || 0
+      @layer  = extra[:layer] || 0
+      @x      = extra[:x] || 0
+      @y      = extra[:y] || 0
+      @data   = extra[:data]
       if !@data
         @data = Array.new(@h * @w, 0)
       end
