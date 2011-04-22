@@ -9,10 +9,10 @@ module Pruim
       uint16 :creator1
       uint16 :creator2
       uint32 :bitmap_offset
-      def initialize(*args)
-        super
+      def set(*args)
         self.magic, self.filesize, self.creator1, self.creator2, 
         self.bitmap_offset = *args
+        self
       end
     end
 
@@ -23,10 +23,10 @@ module Pruim
       int32  :height
       uint16 :nplanes
       uint16 :bitspp
-      def initialize(*args)
-        super
+      def set(*args)
         self.header_size, self.width, self.height, self.nplanes, 
         self.bitspp = *args
+        self
       end
     end
 
@@ -44,10 +44,10 @@ module Pruim
       uint32 :ncolors
       uint32 :nimpcolors
       
-      def initialize(*args) 
-        super
+      def set(*args) 
         self.compress_type, self.bmp_bytesz, self.hres, self.vres, self.ncolors,
         self.nimpcolors  = *args
+        self
       end
     end
 
@@ -67,12 +67,12 @@ module Pruim
       uint8 :g
       uint8 :r
       uint8 :x
-      def initialize(b, g, r, x)
-        super
+      def set(b, g, r, x)
         self.b = b
         self.g = g
         self.r = r
         self.x = x
+        self
       end
     end
     
@@ -81,11 +81,11 @@ module Pruim
       uint8 :g
       uint8 :r
       
-      def initialize(b, g, r)
-        super
+      def set(b, g, r)        
         self.b = b
         self.g = g
         self.r = r
+        self
       end
     end
     
@@ -176,7 +176,7 @@ module Pruim
     def encode_palette(image, io)
       image.palette.each do |color|
         r, g, b = *Color.to_rgb(color)
-        bgrx    = BGRX.new(b, g, r, 0)
+        bgrx    = BGRX.new.set(b, g, r, 0)
         bgrx.write(io)
       end
     end
@@ -209,11 +209,11 @@ module Pruim
       end
       total_size = 14 + info_size + bitmap_size
       # write bmp header info 
-      header = Header.new('BM', total_size, 0, 0, 14 + info_size)
+      header = Header.new.set('BM', total_size, 0, 0, 14 + info_size)
       header.write(io)
-      core   = CoreHeader.new(BITMAPINFOHEADER, image.w, image.h, 1, bitcount)
+      core   = CoreHeader.new.set(BITMAPINFOHEADER, image.w, image.h, 1, bitcount)
       core.write(io)
-      extra  = ExtraHeader.new(BI_RGB, 0, 0, image.palette.size, 0)
+      extra  = ExtraHeader.new.set(BI_RGB, 0, 0, bitcount, image.palette.size, 0)
       extra.write(io)
       # Calculate padding size
       padding = calc_padding(image.w, image.palette?)
