@@ -46,9 +46,9 @@ module Pruim
     end
           
     class ColorTableEntryRGBX < BinData::Record
-      uint8 :r
-      uint8 :g
       uint8 :b
+      uint8 :g
+      uint8 :r
       uint8 :x
     end
     
@@ -64,10 +64,12 @@ module Pruim
     
     def decode_bpp8(io, header, core, extra)
       table =[] 
-      for i in 0..255 
-        table << ColorTableRGBX.read(io)
+      for i in 0..255
+        color = ColorTableEntryRGBX.read(io)        
+        table << color 
       end
-      p table  
+      io.seek(HEADER_SIZE + core.header_size)
+      
     end
     
     def decode(io)
