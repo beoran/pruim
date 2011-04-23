@@ -4,13 +4,15 @@
 
 Pruim is a Pure RUby IMage library, with the indent of supporting 
 multiple image formats. Currently only supports loading from and 
-saving to PPM files. Contributions of other formats are welcome. :)
+saving to PPM files and paletted BMP files. Contributions of 
+other formats are welcome. :)
 
 == Requirements 
 
+BinData (gem install bindata) is required. It makes decoding images much easier.
 Watch and autowatchr for testing.
 Run watchr test/test.watchr to run the tests.
-Later, BinData will probably be required as well.
+
  
 == License 
 
