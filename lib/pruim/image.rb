@@ -30,8 +30,9 @@ module Pruim
       @palette  = extra[:palette]
       @mode     = extra[:mode]      
       @mode   ||= (@palette ? :palette : :rgba)
+      @palette  = Palette.new if !@palette && @mode == :palette
       @depth    = extra[:depth]
-      @depth  ||= (@palette ? depth_for_colors(@palette.size + 1) : 32)
+      @depth  ||= (@palette ? 8 : 32)
       @pages    = [] 
       @ordered  = {} 
       @active   = nil
@@ -81,9 +82,15 @@ module Pruim
     end
     
     # Sets a pixel to the current active page, if any.
-    def getpixel(x, y)
-      @active.getpixel!(x, y)
+    def putpixel(x, y, color)
+      @active.putpixel!(x, y, color)
     end
+
+    # Fills the current active page, if any.
+    def fill(color)
+      @active.fill(color)
+    end
+
      
   end
 end

@@ -186,7 +186,7 @@ module Pruim
       ypos = image.h - 1
       while ypos >= 0
         row   = page.row(ypos)
-        row   = row + [0] * 3
+        row   = row + [0] * padding
         str   = row.pack('C*')
         io.write(str)
         ypos -= 1
@@ -197,6 +197,9 @@ module Pruim
     def encode_bpp8(image, io, padding)
       encode_palette(image, io)
       encode_bpp8_rgb(image, io, padding)
+    end
+    
+    def encode_bpp24(image, io, padding)
     end
     
     def encode(image, io)
@@ -216,7 +219,8 @@ module Pruim
       extra  = ExtraHeader.new.set(BI_RGB, 0, 0, bitcount, image.palette.size, 0)
       extra.write(io)
       # Calculate padding size
-      padding = calc_padding(image.w, image.palette?)
+      padding = calc_padding(image.active.w, image.palette?)
+      warn "padding: #{} #{padding}"
       if image.palette?
         encode_bpp8(image, io, padding)
       else
