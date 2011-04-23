@@ -90,7 +90,33 @@ module Pruim
     def fill(color)
       @active.fill(color)
     end
-
+    
+    # Saves the image to the given filename using the given codec 
+    # If codec is missig, it's determined from the filename's extension.
+    def save_as(filename, codecname = nil)
+      codec = Codec.new_for_filename_name(filename, codecname)
+      return false unless codec
+      io    = File.open(filename, 'wb+')
+      res   = codec.encode(self, io)
+      io.close
+      return res
+    end
+    
+    # Loads the image from the given filename using the given codec 
+    # If codec is missig, it's determined from the filename's extension.
+    def self.load_from(filename, codecname = nil)
+      codec = Codec.new_for_filename_name(filename, codecname)
+      return false unless codec
+      io    = File.open(filename, 'rb+')
+      res   = nil
+      if codec.can_decode?(io)
+        res   = codec.decode(io)
+      else
+        raise "Malformed file #{filename} cannot be decoded as a #{codec} file."
+      end
+      io.close
+      return res
+    end
      
   end
 end

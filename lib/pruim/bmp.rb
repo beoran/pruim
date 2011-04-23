@@ -222,7 +222,6 @@ module Pruim
       extra.write(io)
       # Calculate padding size
       padding = calc_padding(image.active.w, image.palette?)
-      warn "padding: #{} #{padding}"
       if image.palette?
         encode_bpp8(image, io, padding)
       else

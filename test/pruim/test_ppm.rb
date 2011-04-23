@@ -15,16 +15,14 @@ page.putpixel(1, 1, green)
 page.putpixel(10, 10, blue)
 
 outname = test_file("out.ppm")
-fout = File.open(outname, 'w+') 
-codec = Pruim::Codec.new_codec_for('ppm')
-assert { codec } 
-assert { codec.encode(image, fout) }
-fout.close
+assert { image.save_as(outname, "ppm") }
 
-fin = File.open(outname, 'r+')
-image2 = nil
-assert { image2 = codec.decode(fin) }
-fin.close
+image2 = Pruim::Image.load_from(outname, "ppm")
+# 
+# fin = File.open(outname, 'r+')
+# image2 = nil
+# assert { image2 = codec.decode(fin) }
+# fin.close
 page2  = image2.active
 assert { page2 }
 assert { image2.w == test_w }
