@@ -1,7 +1,9 @@
 require 'bindata'
 
 module Pruim
-  class BMP < Codec
+  class BMP
+    include Codec
+    
     class Header < BinData::Record
       endian :little
       string :magic, :length => 2

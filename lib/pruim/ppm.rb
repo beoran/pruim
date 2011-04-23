@@ -1,5 +1,6 @@
 module Pruim
-  class PPM < Codec
+  class PPM 
+    include Codec
     Codec.register('ppm', self) 
     
     def decode(stream)

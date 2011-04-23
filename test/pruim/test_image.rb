@@ -19,31 +19,10 @@ assert { page.h == test_h }
 page.fill(red)
 page.putpixel(1, 1, green)
 page.putpixel(10, 10, blue)
-outname = test_file("out.ppm")
-fout = File.open(outname, 'w+') 
-codec = Pruim::Codec.new_codec_for('ppm')
-assert { codec } 
-assert { codec.encode(image, fout) }
-fout.close
-# system("eog #{outname} &")
-fin = File.open(outname, 'r+')
-image2 = nil
-assert { image2 = codec.decode(fin) }
-fin.close
-page2  = image2.active
-assert { page2 }
-assert { image2.w == test_w }
-assert { image2.h == test_h }
-assert { page2.w  == test_w }
-assert { page2.h  == test_h }
+assert { image.getpixel(1, 1)   == green }
+assert { image.getpixel(10, 10) == blue  }
+assert { image.getpixel(0, 0)   == red   }
 
-assert { page2.getpixel!(1, 1)   == green }
-assert { page2.getpixel!(10, 10) == blue  }
-assert { page2.getpixel!(0, 0)   == red   }
-
-assert { image2.getpixel(1, 1)   == green }
-assert { image2.getpixel(10, 10) == blue  }
-assert { image2.getpixel(0, 0)   == red   }
 
 
 

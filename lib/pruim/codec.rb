@@ -1,5 +1,5 @@
 module Pruim
-  class Codec
+  module Codec
     
     def self.register(name, klass)
       @codecs     ||= {} 
@@ -35,6 +35,10 @@ module Pruim
     
     def encode_will_degrade?(image)
       raise "not implemented"
+    end
+    
+    def text
+      return "A codec that does nothing."
     end
   end
 end
