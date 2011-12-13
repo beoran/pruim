@@ -11,9 +11,9 @@ module Pruim
     attr_reader :pages
     # Currently "active" page.
     attr_reader :active
-    # image mode, may be one of :palette, :rgba
+    # image mode, may be one of :monochrome, :palette, :grayscale, :rgba
     attr_reader :mode
-    # color depth, may be one of 1, 2, 4, 8, 16, 24, 32
+    # Color depth, may be one of 1, 2, 4, 8, 16, 24, 32
     attr_reader :depth
     
     # Extra information data hash table.
@@ -21,6 +21,16 @@ module Pruim
     
     def self.depth_for_colors(ncolors)
       (Math.log(ncolors) / Math.log(2)).to_i
+    end
+
+    # Sets the comment for this image
+    def comment=(comm)
+      @info[:comment] = comm
+    end
+    
+    # gets the comment for this image
+    def comment
+      @info[:comment]
     end
     
     def initialize(w, h, extra = {})
@@ -36,16 +46,21 @@ module Pruim
       @pages    = [] 
       @ordered  = {} 
       @active   = nil
+      # Construct many pages.
       if extra[:pages]
         data = extra[:data] || []
         extra[:pages].times { |i| self.new_page(@w, @h, :data => data[i]) }
-      end  
+      # Construct a single page if data is given nevertheless
+      elsif extra[:data]
+        self.new_page(@w, @h, :data => extra[:data])
+      end
+      # Set comments if any
+      self.comment = extra[:comment]
     end
     
     def palette?
       return !(@palette.nil?)
-    end
-      
+    end      
     
     # Sets the page with the given index as active if it exists.
     def activate(index)
@@ -117,6 +132,29 @@ module Pruim
       io.close
       return res
     end
+
+    # Creates a new rgb color for use with this image.
+    # If the image is palleted, the color is added to the palette and the index
+    # is returned, otherwise the color is returned
+    def new_rgb(r, g, b)
+      if palette?
+        return @palette.new_rgb
+      else
+        return Color.rgb(r, g, b)
+      end     
+    end
+
+    # Creates a new rgba color for use with this image.
+    # If the image is palleted, the color is added to the palette and the index
+    # is returned, otherwise the color is returned
+    def new_rgba(r, g, b, a)
+      if palette?
+        return @palette.new_rgba
+      else
+        return Color.rgba(r, g, b, a)
+      end
+    end
+
      
   end
 end

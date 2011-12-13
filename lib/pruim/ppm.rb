@@ -16,7 +16,7 @@ module Pruim
       comment = ''
       lines.each do |line| 
         if line[0] == '#'
-          comment << line
+          comment << line.chomp.sub(/\A#/, '') 
           next
         end
         if !image
@@ -36,14 +36,15 @@ module Pruim
           page.putpixel(x, y, color)
         end
         y += 1 
-      end  
+      end
+      image.comment = comment
       return image
     end
     
     
     def encode(image, stream)
       stream.puts("P3")
-      stream.puts("#No comments yet")
+      stream.puts("##{image.comment}") if image.comment
       stream.puts("#{image.w} #{image.h}")
       stream.puts("255")
       page = image.pages.first

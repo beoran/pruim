@@ -4,7 +4,7 @@ module Pruim
   autoload :Palette , 'pruim/palette'
   autoload :Image   , 'pruim/image'
   autoload :Page    , 'pruim/page'
-  autoload :PPM     , 'pruim/ppm'
+  autoload :PBM     , 'pruim/pbm'
+  autoload :PPM     , 'pruim/ppm'  
   autoload :BMP     , 'pruim/bmp'
-  
 end

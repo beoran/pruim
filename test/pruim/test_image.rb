@@ -23,6 +23,11 @@ assert { image.getpixel(1, 1)   == green }
 assert { image.getpixel(10, 10) == blue  }
 assert { image.getpixel(0, 0)   == red   }
 
+image2 = Pruim::Image.new(2, 3, :data => [ 1, 2, 3, 4, 5, 6])
+assert { image2 }
+assert { image2.getpixel(0, 0) == 1     }
+assert { image2.getpixel(1, 1) == 4     }
+assert { image2.getpixel(1, 2) == 6     }
 
 
 

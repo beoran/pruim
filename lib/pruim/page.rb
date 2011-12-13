@@ -1,6 +1,13 @@
  module Pruim
   # A Page can represents both a layer and a frame of animation, for 
   # multi-page image formats.
+  # Inside a Page, bitmap data is stored in an array as follows:
+  # For a monochrome image, true and false are stored, where true is "black"
+  # meaning pixel activated, on, say, an LCD screen, and false means white
+  # or pixel not activated.
+  # For :palette mode images, what is stored are palette indexes.
+  # for an RBGA , integers are stored that encode the color in an 8888 bits
+  # ABGR way
   class Page
     attr_reader :image
     attr_reader :w
@@ -37,16 +44,23 @@
         @data = Array.new(@h * @w, 0)
       end
     end
-    
+
+    # Returns true if the coordinates are outside of the limits of this page.
     def outside?(x, y)
       return true   if (x  < 0 ) || (y  < 0 ) 
       return true   if (x >= @w) || (y >= @h)
       return false
     end
-    
+
+    # Gets the pixel at coordinates x,y.  Returns nil if out of bounds. 
     def getpixel!(x, y)
       @data[y * @w + x]
     end
+
+    # Gets the pixel at coordinates x,y. Returns nil if out of bounds. 
+    def getpixel(x, y)      
+      return getpixel!(x, y)    
+    end    
     
     def putpixel!(x, y, color)
       @data[y * @w + x] = color

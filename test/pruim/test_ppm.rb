@@ -2,7 +2,7 @@ require 'test_helper'
 require 'pruim'
 
 test_w, test_h = 64, 32
-
+test_comment = "Test PPM file for Pruim."
 assert { Pruim }
 assert { Pruim::Image } 
 image = Pruim::Image.new(test_w, test_h, :pages => 1)
@@ -13,6 +13,7 @@ page  = image.active
 page.fill(red)
 page.putpixel(1, 1, green)
 page.putpixel(10, 10, blue)
+image.comment = test_comment
 
 outname = test_file("out.ppm")
 assert { image.save_as(outname, "ppm") }
@@ -37,7 +38,7 @@ assert { page2.getpixel!(0, 0)   == red   }
 assert { image2.getpixel(1, 1)   == green }
 assert { image2.getpixel(10, 10) == blue  }
 assert { image2.getpixel(0, 0)   == red   }
-
+assert { image2.comment          == test_comment }
 
 
 

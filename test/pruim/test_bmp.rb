@@ -43,6 +43,7 @@ gray  = image2.palette.new_rgb(127, 128, 129)
 red   = image2.palette.new_rgb(255,   0,   0)
 green = image2.palette.new_rgb(0  , 255, 255)
 blue  = image2.palette.new_rgb(0  ,   0, 255)
+p red
 image2.fill(gray)
 image2.putpixel(4, 5, red)
 image2.putpixel(5, 6, green)
