@@ -13,7 +13,7 @@ module Pruim
     
     # Returns the codec to use for the given filename, based on the extension
     def self.for_filename(filename)
-      ext = File.extname(flename) # get filename extension
+      ext = File.extname(filename) # get filename extension
       return self.codec_for(name)
     end
     

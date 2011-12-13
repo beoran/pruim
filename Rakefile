@@ -4,7 +4,7 @@ require 'rake/clean'
 CLEAN.include("pkg/*.gem")
 
 
-PRUIM_VERSION = "0.1.0"
+PRUIM_VERSION = "0.1.1"
 
 def apply_spec_defaults(s)
 end
@@ -14,7 +14,7 @@ end
   s.platform    = Gem::Platform::RUBY
   s.summary     = "Pure Ruby Image Library."
   s.name        = 'pruim'
-  s.version     = '0.1.0'
+  s.version     = PRUIM_VERSION
   s.add_dependency('bindata', '>= 1.0.0')
   s.add_development_dependency('atto', '>= 0.9.2')
   s.require_path = 'lib'
